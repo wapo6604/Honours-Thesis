@@ -1,0 +1,83 @@
+_<d1,d2> := PolynomialRing(Rationals(),2);
+(d1-1)*(d1-2)*(d1-3)/6;
+f := function(x); return (x-1)*(x-2)*(x-3)/6; end function;
+f(d1+d2)-f(d1)-f(d2);
+
+for a in [0..4] do
+    for b in [0..4] do
+        val := Evaluate(f, [a,b]);
+        print "d1=", a, ", d2=", b, "->", val;
+    end for;
+end for;
+
+
+
+
+R<d1,d2> := PolynomialRing(Rationals(),2);
+
+f := function(x); return (x-1)*(x-2)*(x-3)/6; end function;
+
+g := f(d1+d2) - f(d1) - f(d2);
+
+for a in [0..4] do
+    for b in [0..4] do
+        val := Evaluate(g, [a,b]);
+        print "d1=", a, ", d2=", b, "->", val;
+    end for;
+end for;
+
+
+R<d1,d2> := PolynomialRing(Rationals(),2);
+
+f := function(x); return (x-1)*(x-2)*(x-3)/6; end function;
+g := f(d1+d2) - f(d1) - f(d2);
+
+// Collect all values
+vals := [ Evaluate(g, [a,b]) : a in [0..4], b in [0..4] ];
+
+// Remove multiplicities (convert to set), then sort
+unique_sorted := Sort(SetToSequence(SequenceToSet(vals)));
+
+unique_sorted;
+
+
+
+
+
+ResultCounts := {@ @};
+
+for s in [0..4] do
+    for d in [0..4] do
+        // Scaled simplex
+        Simplex := [[0,0,0],[s,0,0],[0,s,0],[0,0,s]];
+        
+        // Cube of side length d
+        Cube := [[x*d,y*d,z*d] : x in [0,1], y in [0,1], z in [0,1]];
+        // Minkowski sum
+        P := [ [u[i] + v[i] : i in [1..3]] : u in Simplex, v in Cube ];
+        Delta := Polytope(P);
+        
+        // Interior counts
+        N_Mink := #InteriorPoints(Delta);
+        N_Simplex := #InteriorPoints(Polytope(Simplex));
+        N_Cube := #InteriorPoints(Polytope(Cube));
+        
+        // Compute the subtraction as requested
+        N := N_Mink - N_Simplex - N_Cube;
+        
+        Include(~ResultCounts, N);
+    end for;
+end for;
+
+// Sorted list of distinct results
+SortedResults := Sort(SetToSequence(ResultCounts));
+SortedResults;
+
+
+
+Cone_Points := [[0,0,0],[2,0,0],[2,1,0],[1,0,1]];
+Cube_Points := [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+Cone := Polytope(Cone_Points);
+Cube := Polytope(Cube_Points);
+#InteriorPoints(Cone+Cube)-#InteriorPoints(Cube)-#InteriorPoints(Cone)
+
